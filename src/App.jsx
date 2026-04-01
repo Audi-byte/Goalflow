@@ -1,3 +1,4 @@
+import SkillTracker from './components/SkillTracker'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import { useProfile } from './hooks/useProfile'
@@ -37,11 +38,22 @@ export default function App() {
 
   return (
     <div style={{ background: '#0F0F0F', minHeight: '100vh', paddingBottom: '80px' }}>
+
+<div style={{ position: 'fixed', top: '0.75rem', right: '1rem', zIndex: 200 }}>
+  <button
+    onClick={() => supabase.auth.signOut()}
+    style={{ background: 'none', border: '1px solid rgba(245,166,35,0.2)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', color: '#8A7A6E', cursor: 'pointer' }}
+  >
+    Sign out
+  </button>
+</div>
+
       {screen === 'dashboard' && <Dashboard profile={profile} incomeLogs={incomeLogs} dailyLogs={dailyLogs} pipeline={pipeline} />}
       {screen === 'income' && <IncomeLogger incomeLogs={incomeLogs} addIncome={addIncome} />}
       {screen === 'daily' && <DailyLog addDailyLog={addDailyLog} dailyLogs={dailyLogs} />}
       {screen === 'pipeline' && <Pipeline pipeline={pipeline} addPipelineItem={addPipelineItem} updatePipelineItem={updatePipelineItem} />}
       {screen === 'coach' && <AICoach incomeLogs={incomeLogs} dailyLogs={dailyLogs} pipeline={pipeline} addInsight={addInsight} />}
+      {screen === 'growth' && <SkillTracker skillLogs={skillLogs} addSkillLog={addSkillLog} />}
       <NavBar active={screen} setActive={setScreen} />
     </div>
   )
