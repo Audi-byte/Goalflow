@@ -1,18 +1,33 @@
 export const config = { runtime: 'edge' }
 
-const LD_KEYWORDS = [
-  'instructional designer', 'instructional design',
-  'learning experience', 'elearning', 'e-learning',
-  'learning designer', 'curriculum developer',
-  'training developer', 'learning developer',
-  'learning consultant', 'l&d', 'learning and development',
-  'performance consultant', 'learning architect',
-  'articulate', 'storyline', 'moodle', 'lms'
+const LD_TITLES = [
+  'instructional designer',
+  'instructional design',
+  'learning experience',
+  'elearning',
+  'e-learning',
+  'learning designer',
+  'curriculum developer',
+  'curriculum designer',
+  'training developer',
+  'learning developer',
+  'learning consultant',
+  'learning and development',
+  'performance consultant',
+  'learning architect',
+  'learning technologist',
+  'instructional technologist',
+  'training specialist',
+  'learning specialist',
+  'content developer',
+  'course developer',
+  'articulate storyline',
+  'moodle',
 ]
 
-function isLDJob(job) {
-  const text = `${job.position || job.title || ''} ${job.tags?.join(' ') || ''} ${job.description || ''}`.toLowerCase()
-  return LD_KEYWORDS.some(k => text.includes(k))
+function isLDJob(title = '', category = '', tags = []) {
+  const text = `${title} ${category} ${tags.join(' ')}`.toLowerCase()
+  return LD_TITLES.some(k => text.includes(k))
 }
 
 export default async function handler(req) {
@@ -22,21 +37,43 @@ export default async function handler(req) {
   }
 
   try {
-    const [remoteokRes, jobicyRes] = await Promise.allSettled([
+    const results = await Promise.allSettled([
+      fetch('https://remotive.com/api/remote-jobs?category=all-others&limit=100'),
+      fetch('https://remotive.com/api/remote-jobs?category=design&limit=100'),
+      fetch('https://remotive.com/api/remote-jobs?category=teaching&limit=50'),
       fetch('https://remoteok.com/api', {
-        headers: { 'User-Agent': 'GoalFlow Job Tracker - goalflow.vercel.app' }
+        headers: { 'User-Agent': 'GoalFlow/1.0 goalflow.vercel.app' }
       }),
-      fetch('https://jobicy.com/api/v2/remote-jobs?count=50&industry=education', {
-        headers: { 'User-Agent': 'GoalFlow Job Tracker' }
-      })
     ])
 
     let jobs = []
 
-    if (remoteokRes.status === 'fulfilled' && remoteokRes.value.ok) {
-      const data = await remoteokRes.value.json()
+    for (const result of results.slice(0, 3)) {
+      if (result.status === 'fulfilled' && result.value.ok) {
+        const data = await result.value.json()
+        const filtered = (data.jobs || [])
+          .filter(j => isLDJob(j.title, j.category, j.candidate_required_location ? [j.candidate_required_location] : []))
+          .map(j => ({
+            id: `rem_${j.id}`,
+            title: j.title,
+            company: j.company_name,
+            url: j.url,
+            tags: j.tags || [],
+            salary: j.salary || null,
+            date: j.publication_date ? j.publication_date.slice(0, 10) : null,
+            source: 'Remotive',
+            location: j.candidate_required_location || 'Worldwide',
+            description: j.description ? j.description.replace(/<[^>]*>/g, '').slice(0, 200) : null,
+          }))
+        jobs = [...jobs, ...filtered]
+      }
+    }
+
+    const remoteokResult = results[3]
+    if (remoteokResult.status === 'fulfilled' && remoteokResult.value.ok) {
+      const data = await remoteokResult.value.json()
       const filtered = (Array.isArray(data) ? data.slice(1) : [])
-        .filter(isLDJob)
+        .filter(j => isLDJob(j.position, '', j.tags || []))
         .map(j => ({
           id: `rok_${j.id}`,
           title: j.position,
@@ -46,28 +83,19 @@ export default async function handler(req) {
           salary: j.salary || null,
           date: j.date ? new Date(j.date * 1000).toISOString().slice(0, 10) : null,
           source: 'RemoteOK',
-          location: 'Remote'
+          location: 'Remote',
+          description: null,
         }))
       jobs = [...jobs, ...filtered]
     }
 
-    if (jobicyRes.status === 'fulfilled' && jobicyRes.value.ok) {
-      const data = await jobicyRes.value.json()
-      const filtered = (data.jobs || [])
-        .filter(isLDJob)
-        .map(j => ({
-          id: `jcy_${j.id}`,
-          title: j.jobTitle,
-          company: j.companyName,
-          url: j.url,
-          tags: j.jobIndustry ? [j.jobIndustry] : [],
-          salary: j.annualSalaryMin ? `$${j.annualSalaryMin}–$${j.annualSalaryMax}` : null,
-          date: j.pubDate ? j.pubDate.slice(0, 10) : null,
-          source: 'Jobicy',
-          location: j.jobGeo || 'Remote'
-        }))
-      jobs = [...jobs, ...filtered]
-    }
+    const seen = new Set()
+    jobs = jobs.filter(j => {
+      const key = `${j.title}_${j.company}`.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 
     jobs.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
