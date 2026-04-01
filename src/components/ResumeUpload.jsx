@@ -66,17 +66,17 @@ export default function ResumeUpload({ session }) {
 
   useEffect(() => { fetchResume() }, [session])
 
-  async function fetchResume() {
-    setFetching(true)
-    const { data } = await supabase
-      .from('resumes')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-    setResume(data?.[0] || null)
-    setFetching(false)
-  }
+async function fetchResume() {
+  setFetching(true)
+  const { data } = await supabase
+    .from('resumes')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+  setResume(data?.[0] || null)
+  setFetching(false)
+}
 
   async function handleFile(file) {
     if (!file) return

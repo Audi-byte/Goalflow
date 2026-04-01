@@ -13,8 +13,13 @@ export function useData(session) {
   async function fetchAll() {
     if (!session) return
     const uid = session.user.id
-    const res = await supabase.from('resumes').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(1).single()
-setResume(res.data || null)
+    const resData = await supabase
+  .from('resumes')
+  .select('*')
+  .eq('user_id', uid)
+  .order('created_at', { ascending: false })
+  .limit(1)
+setResume(resData.data?.[0] || null)
     const [inc, daily, skills, pipe, ins] = await Promise.all([
       supabase.from('income_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
       supabase.from('daily_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
