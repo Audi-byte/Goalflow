@@ -4,19 +4,25 @@ import { supabase } from '../supabase'
 export function useData(session) {
   const [incomeLogs, setIncomeLogs] = useState([])
   const [dailyLogs, setDailyLogs] = useState([])
+  const [skillLogs, setSkillLogs] = useState([])
+  const [pipeline, setPipeline] = useState([])
   const [insights, setInsights] = useState([])
   const [loading, setLoading] = useState(true)
 
   async function fetchAll() {
     if (!session) return
     const uid = session.user.id
-    const [inc, daily, ins] = await Promise.all([
+    const [inc, daily, skills, pipe, ins] = await Promise.all([
       supabase.from('income_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
       supabase.from('daily_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
+      supabase.from('skill_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
+      supabase.from('pipeline').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
       supabase.from('ai_insights').select('*').eq('user_id', uid).order('date', { ascending: false })
     ])
     setIncomeLogs(inc.data || [])
     setDailyLogs(daily.data || [])
+    setSkillLogs(skills.data || [])
+    setPipeline(pipe.data || [])
     setInsights(ins.data || [])
     setLoading(false)
   }
@@ -40,10 +46,29 @@ export function useData(session) {
     }
   }
 
+  async function addSkillLog(entry) {
+    const { data } = await supabase.from('skill_logs').insert({ ...entry, user_id: session.user.id }).select().single()
+    setSkillLogs(prev => [data, ...prev])
+  }
+
+  async function addPipelineItem(entry) {
+    const { data } = await supabase.from('pipeline').insert({ ...entry, user_id: session.user.id }).select().single()
+    setPipeline(prev => [data, ...prev])
+  }
+
+  async function updatePipelineItem(id, updates) {
+    const { data } = await supabase.from('pipeline').update(updates).eq('id', id).select().single()
+    setPipeline(prev => prev.map(p => p.id === id ? data : p))
+  }
+
   async function addInsight(entry) {
     const { data } = await supabase.from('ai_insights').insert({ ...entry, user_id: session.user.id }).select().single()
     setInsights(prev => [data, ...prev])
   }
 
-  return { incomeLogs, dailyLogs, insights, loading, addIncome, addDailyLog, addInsight, refetch: fetchAll }
+  return {
+    incomeLogs, dailyLogs, skillLogs, pipeline, insights, loading,
+    addIncome, addDailyLog, addSkillLog, addPipelineItem, updatePipelineItem, addInsight,
+    refetch: fetchAll
+  }
 }
