@@ -69,7 +69,7 @@ const s = {
   copyBtn: { fontSize: '11px', color: '#F5A623', background: 'none', border: '1px solid rgba(245,166,35,0.2)', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', marginTop: '6px' },
 }
 
-export default function AICoach({ incomeLogs, dailyLogs, pipeline, addInsight }) {
+export default function AICoach({ incomeLogs, dailyLogs, pipeline, addInsight, resume }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -80,16 +80,17 @@ export default function AICoach({ incomeLogs, dailyLogs, pipeline, addInsight })
   const recentIncome = incomeLogs.slice(0, 7)
   const activePipeline = pipeline.filter(p => !['won', 'lost'].includes(p.status))
 
-  function buildContext(userMsg) {
-    return `
+function buildContext(userMsg) {
+  return `
 FINANCIAL: $${total} of $10,000 earned (${Math.round((total / 10000) * 100)}%).
 PIPELINE: ${activePipeline.map(p => `${p.type}: ${p.title} — ${p.status}`).join(', ') || 'empty'}
 RECENT DAILY LOGS:
 ${recentDaily.map(l => `[${l.date}] Mood:${l.mood} Energy:${l.energy} Outreach:${l.did_outreach ? `Yes(${l.outreach_count})` : 'No'} Wins:${l.wins || 'none'} Blockers:${l.blockers || 'none'}`).join('\n') || 'none'}
 RECENT INCOME:
 ${recentIncome.map(l => `[${l.date}] $${l.amount} — ${l.source}`).join('\n') || 'no income logged yet'}
+${resume?.extracted_text ? `\nAUDI'S RESUME / CV:\n${resume.extracted_text}` : ''}
 USER: ${userMsg}`
-  }
+}
 
   async function sendMessage(text) {
     const msg = text || input.trim()

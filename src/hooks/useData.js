@@ -8,10 +8,13 @@ export function useData(session) {
   const [pipeline, setPipeline] = useState([])
   const [insights, setInsights] = useState([])
   const [loading, setLoading] = useState(true)
+  const [resume, setResume] = useState(null)
 
   async function fetchAll() {
     if (!session) return
     const uid = session.user.id
+    const res = await supabase.from('resumes').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(1).single()
+setResume(res.data || null)
     const [inc, daily, skills, pipe, ins] = await Promise.all([
       supabase.from('income_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
       supabase.from('daily_logs').select('*').eq('user_id', uid).order('date', { ascending: false }),
@@ -66,9 +69,9 @@ export function useData(session) {
     setInsights(prev => [data, ...prev])
   }
 
-  return {
-    incomeLogs, dailyLogs, skillLogs, pipeline, insights, loading,
-    addIncome, addDailyLog, addSkillLog, addPipelineItem, updatePipelineItem, addInsight,
-    refetch: fetchAll
-  }
+ return {
+  incomeLogs, dailyLogs, skillLogs, pipeline, insights, resume, loading,
+  addIncome, addDailyLog, addSkillLog, addPipelineItem, updatePipelineItem, addInsight,
+  refetch: fetchAll
+}
 }

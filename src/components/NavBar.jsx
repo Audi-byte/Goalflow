@@ -1,4 +1,4 @@
-import { LayoutDashboard, DollarSign, CheckSquare, Bot, GitBranch, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, DollarSign, CheckSquare, Bot, GitBranch, TrendingUp, FileText } from 'lucide-react'
 
 const tabs = [
   { id: 'dashboard', label: 'Today', Icon: LayoutDashboard },
@@ -6,6 +6,7 @@ const tabs = [
   { id: 'daily', label: 'Daily', Icon: CheckSquare },
   { id: 'pipeline', label: 'Pipeline', Icon: GitBranch },
   { id: 'growth', label: 'Growth', Icon: TrendingUp },
+  { id: 'resume', label: 'Resume', Icon: FileText },
   { id: 'coach', label: 'Coach', Icon: Bot },
 ]
 
