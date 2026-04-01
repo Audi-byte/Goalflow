@@ -388,6 +388,22 @@ async function fetchResume() {
             <button style={s.copyBtn} onClick={() => copy(analysis.cover_letter, 'cover')}>
               {copied === 'cover' ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
             </button>
+
+<button
+  style={{ ...s.copyBtn, marginLeft: '6px' }}
+  onClick={() => {
+    const blob = new Blob([analysis.cover_letter], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'cover-letter.txt'
+    a.click()
+    URL.revokeObjectURL(url)
+  }}
+>
+  Download
+</button>
+
           </div>
 
           <button style={s.ghostBtn} onClick={() => { setActiveTab('job'); setAnalysis(null) }}>

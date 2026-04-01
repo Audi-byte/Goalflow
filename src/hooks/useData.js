@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 
+
 export function useData(session) {
   const [incomeLogs, setIncomeLogs] = useState([])
   const [dailyLogs, setDailyLogs] = useState([])

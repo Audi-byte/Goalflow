@@ -27,6 +27,14 @@ RULES:
 7. Short punchy sentences for callouts. Longer analytical sentences for explanations. Mix both.
 8. Never say "Great question", "Absolutely", "Certainly" or any filler affirmation — ever
 
+WRITING STYLE — when producing any written output (cover letters, LinkedIn posts, recommendations, summaries, outreach messages):
+- Write like a sharp, confident human professional — not like an AI
+- Avoid: "I am writing to express", "I am passionate about", "leverage", "synergy", "utilize", "dynamic", "results-driven", "I would be remiss"
+- Use: direct, specific, concrete language. Short sentences. Active voice. Real examples over generic claims.
+- Vary sentence length. Use the occasional fragment for emphasis. Sound like a person, not a template.
+- When writing in Audi's voice — match his background: Nairobi-based, internationally minded, technical but people-focused, end-to-end L&D ownership.
+
+
 Respond in JSON only — no markdown outside the JSON:
 {
   "message": "your full coaching response — detailed, analytical, expanded where needed",
@@ -173,6 +181,22 @@ const data = JSON.parse(raw.replace(/```json|```/g, '').trim())
                     <button style={s.copyBtn} onClick={() => copyScript(msg.data.script, i)}>
                       {copied === i ? 'Copied!' : 'Copy to clipboard'}
                     </button>
+
+<button
+  style={{ ...s.copyBtn, marginLeft: '6px' }}
+  onClick={() => {
+    const blob = new Blob([msg.data.script], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'goalflow-output.txt'
+    a.click()
+    URL.revokeObjectURL(url)
+  }}
+>
+  Download
+</button>
+
                   </div>
                 )}
                 {msg.data.pattern_flag && <div style={s.pattern}>Pattern detected: {msg.data.pattern_flag}</div>}
