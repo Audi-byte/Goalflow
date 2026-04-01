@@ -87,19 +87,24 @@ USER: ${userMsg}`
     setMessages(m => [...m, { role: 'user', text: msg }])
     setLoading(true)
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: buildContext(msg) }]
-        })
-      })
-      const json = await res.json()
-      const raw = json.content?.[0]?.text || '{}'
-      const data = JSON.parse(raw.replace(/```json|```/g, '').trim())
+     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+  },
+  body: JSON.stringify({
+    model: 'llama-3.3-70b-versatile',
+    max_tokens: 1500,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: buildContext(msg) }
+    ]
+  })
+})
+const json = await res.json()
+const raw = json.choices?.[0]?.message?.content || '{}'
+const data = JSON.parse(raw.replace(/```json|```/g, '').trim())
       setMessages(m => [...m, { role: 'ai', data }])
       if (data.message) {
         await addInsight({

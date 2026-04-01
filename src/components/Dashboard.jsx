@@ -133,20 +133,25 @@ Today: ${today}.
 Recent blockers: ${dailyLogs.slice(0, 3).map(l => l.blockers).filter(Boolean).join(', ') || 'none logged'}.`
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: MISSION_SYSTEM,
-          messages: [{ role: 'user', content: context }]
-        })
-      })
-      const json = await res.json()
-      const raw = json.content?.[0]?.text || '{}'
-      const clean = raw.replace(/```json|```/g, '').trim()
-      const data = JSON.parse(clean)
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+  },
+  body: JSON.stringify({
+    model: 'llama-3.3-70b-versatile',
+    max_tokens: 1000,
+    messages: [
+      { role: 'system', content: MISSION_SYSTEM },
+      { role: 'user', content: context }
+    ]
+  })
+})
+const json = await res.json()
+const raw = json.choices?.[0]?.message?.content || '{}'
+const clean = raw.replace(/```json|```/g, '').trim()
+const data = JSON.parse(clean)
       setMissions(data)
       setDoneMissions([])
       localStorage.setItem('gf_missions', JSON.stringify(data))
