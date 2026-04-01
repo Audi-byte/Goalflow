@@ -11,7 +11,6 @@ import IncomeLogger from './components/IncomeLogger'
 import DailyLog from './components/DailyLog'
 import AICoach from './components/AICoach'
 import Pipeline from './components/Pipeline'
-import ResumeUpload from './components/ResumeUpload'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -56,6 +55,7 @@ export default function App() {
       {screen === 'pipeline' && <Pipeline pipeline={pipeline} addPipelineItem={addPipelineItem} updatePipelineItem={updatePipelineItem} />}
       {screen === 'coach' && <AICoach incomeLogs={incomeLogs} dailyLogs={dailyLogs} pipeline={pipeline} addInsight={addInsight} resume={resume} />}
       {screen === 'growth' && <SkillTracker skillLogs={skillLogs} addSkillLog={addSkillLog} />}
+      {screen === 'resume' && <ResumeUpload session={session} />}
       <NavBar active={screen} setActive={setScreen} />
     </div>
   )
