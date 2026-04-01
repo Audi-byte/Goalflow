@@ -1,3 +1,4 @@
+import ResumeUpload from './components/ResumeUpload'
 import SkillTracker from './components/SkillTracker'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
